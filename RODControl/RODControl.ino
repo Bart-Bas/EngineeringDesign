@@ -12,6 +12,9 @@ int cameraX = CAMERAXFORWARD;
 int cameraY = CAMERAYFORWARD;
 int turnServo = TURNSERVOMID;
 int gripperServo = GRIPPERSERVOMIN;
+int pulleyServo = PULLEYSERVOIDLE - PULLEYSERVOSLOW;
+
+bool pulleyIdle = true;
 
 void setup()
 {
@@ -37,13 +40,12 @@ void setup()
   // Initialize the endstop switch
   pinMode(ENDSTOP, INPUT);
   digitalWrite(ENDSTOP, HIGH); // Enable internal pullup resistor
-  attachInterrupt(digitalPinToInterrupt(ENDSTOP), endstopPressed, FALLING);
-  attachInterrupt(digitalPinToInterrupt(ENDSTOP), endstopNotPressed, RISING);
+  attachInterrupt(digitalPinToInterrupt(ENDSTOP), endstopChange, CHANGE);
 
   // Set all the servos in their intitial positions
   servoCameraX.write(cameraX);
   servoCameraY.write(cameraY);
-  servoPulley.write(PULLEYSERVOIDLE);
+  servoPulley.write(pulleyServo);
   servoTurn.write(turnServo);
   servoGripper.write(gripperServo);
   
@@ -235,15 +237,21 @@ void loop() {
   }
 #endif
 
-// Function that is called when the endstop gets pressed
-void endstopPressed()
+// Function that is called when the endstop gets pressed or released
+void endstopChange()
 {
-  
-}
-
-// Function that is called when the endstop gets released
-void endstopNotPressed()
-{
-  
+  if(digitalRead(ENDSTOP))
+  {
+    if(pulleyIdle)
+    {
+      pulleyServo = PULLEYSERVOIDLE - PULLEYSERVOSLOW;
+      servoPulley.write(pulleyServo);
+    }
+  }
+  else
+  {
+    pulleyServo = PULLEYSERVOIDLE + PULLEYSERVOSLOW;
+    servoPulley.write(pulleyServo);
+  }  
 }
 
