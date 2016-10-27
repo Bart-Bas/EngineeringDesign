@@ -33,9 +33,10 @@
 #define GRIPPERSERVOMAX 60
 #define GRIPPERSERVOSTEP 1
 
-#define PULLEYSERVOIDLE 90
-#define PULLEYSERVOSLOW 1
-#define PULLEYSERVOFAST 40
+#define PULLEYSERVOIDLE 1462
+#define PULLEYSERVOMAXTUNE 20
+#define PULLEYSERVOTURN 40
+#define PULLEYSERVOTURNTIME 100
 
 #define CAMERAXMIN 10
 #define CAMERAXMAX 125
@@ -46,6 +47,11 @@
 #define CAMERAYGRIPPER 55
 #define CAMERAYFORWARD 80
 #define CAMERASTEP 2
+
+// Pulley states
+#define PULLEYIDLE 0
+#define PULLEYUP 1
+#define PULLEYDOWN 2
 
 // Function prototypes
 void waitAndBlink(unsigned long deltaMilliSec);

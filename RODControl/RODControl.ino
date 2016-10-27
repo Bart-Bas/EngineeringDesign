@@ -12,9 +12,11 @@ int cameraX = CAMERAXFORWARD;
 int cameraY = CAMERAYFORWARD;
 int turnServo = TURNSERVOMID;
 int gripperServo = GRIPPERSERVOMIN;
-int pulleyServo = PULLEYSERVOIDLE - PULLEYSERVOSLOW;
+int pulleyServoIdle = PULLEYSERVOIDLE;
+int pulleyServo = pulleyServoIdle;
 
-bool pulleyIdle = true;
+int pulleyState = PULLEYIDLE;
+unsigned long lastTimePulleyChanged;
 
 void setup()
 {
@@ -45,7 +47,7 @@ void setup()
   // Set all the servos in their intitial positions
   servoCameraX.write(cameraX);
   servoCameraY.write(cameraY);
-  servoPulley.write(pulleyServo);
+  servoPulley.writeMicroseconds(pulleyServo);
   servoTurn.write(turnServo);
   servoGripper.write(gripperServo);
   
@@ -164,6 +166,35 @@ void loop() {
       break;
 
       // Pulley control
+      // Pulley down
+      case '-':
+        pulleyState = PULLEYDOWN;
+        lastTimePulleyChanged = millis();
+      break;
+
+      // Pulley up
+      case '=':
+        // Endstop not pressed
+        if(digitalRead(ENDSTOP))
+        {
+          pulleyState = PULLEYUP;
+          lastTimePulleyChanged = millis();
+        }
+      break;
+      
+      // Tune pulley idle down
+      case '(':
+        pulleyServoIdle += 1;
+        if(pulleyServoIdle > (PULLEYSERVOIDLE + PULLEYSERVOMAXTUNE))
+          pulleyServoIdle = (PULLEYSERVOIDLE + PULLEYSERVOMAXTUNE);
+      break;
+
+      // Tune pulley idle down
+      case ')':
+          pulleyServoIdle -= 1;
+        if(pulleyServoIdle < (PULLEYSERVOIDLE - PULLEYSERVOMAXTUNE))
+          pulleyServoIdle = (PULLEYSERVOIDLE - PULLEYSERVOMAXTUNE);
+      break;
 
       // Camera control
       // Move image up
@@ -215,6 +246,23 @@ void loop() {
       break;
      }
   }
+
+  if(pulleyState == PULLEYIDLE)
+    servoPulley.writeMicroseconds(pulleyServoIdle);
+  else if(pulleyState == PULLEYDOWN)
+  {
+     servoPulley.writeMicroseconds(pulleyServoIdle + PULLEYSERVOTURN);
+
+     if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
+      pulleyState = PULLEYIDLE;
+  }
+  else if(pulleyState == PULLEYUP)
+  {
+     servoPulley.writeMicroseconds(pulleyServoIdle - PULLEYSERVOTURN);
+
+     if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
+      pulleyState = PULLEYIDLE;
+  }
 }
 
 #if CONNECTION == LAN
@@ -240,18 +288,10 @@ void loop() {
 // Function that is called when the endstop gets pressed or released
 void endstopChange()
 {
-  if(digitalRead(ENDSTOP))
+  // Endstop pressed
+  if(!digitalRead(ENDSTOP))
   {
-    if(pulleyIdle)
-    {
-      pulleyServo = PULLEYSERVOIDLE - PULLEYSERVOSLOW;
-      servoPulley.write(pulleyServo);
-    }
+    pulleyState = PULLEYIDLE;
   }
-  else
-  {
-    pulleyServo = PULLEYSERVOIDLE + PULLEYSERVOSLOW;
-    servoPulley.write(pulleyServo);
-  }  
 }
 
