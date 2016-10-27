@@ -68,7 +68,8 @@ void setup()
      mySerial.read();
 }
 
-void loop() {
+void loop()
+{
   if(mySerial.available() > 0)
   {
     char command = mySerial.read();
@@ -244,9 +245,17 @@ void loop() {
         servoCameraX.write(cameraX);
         servoCameraY.write(cameraY);
       break;
-     }
-  }
 
+      // Look at the ring
+      case 'r':
+        cameraX = CAMERAXRING;
+        cameraY = CAMERAYRING;
+        servoCameraX.write(cameraX);
+        servoCameraY.write(cameraY);
+      break;
+   }
+  }
+     
   if(pulleyState == PULLEYIDLE)
     servoPulley.writeMicroseconds(pulleyServoIdle);
   else if(pulleyState == PULLEYDOWN)
@@ -265,7 +274,7 @@ void loop() {
   }
 }
 
-#if CONNECTION == LAN
+#if CONNECTION == WLAN
   // Function for the LED boot sequence to make sure the wireless connection is stable
   void waitAndBlink(unsigned long deltaMilliSec)
   {

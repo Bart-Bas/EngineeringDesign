@@ -41,11 +41,13 @@
 #define CAMERAXMIN 10
 #define CAMERAXMAX 125
 #define CAMERAXGRIPPER 110
-#define CAMERAXFORWARD 80
+#define CAMERAXFORWARD 86
+#define CAMERAXRING 112
 #define CAMERAYMIN 40
 #define CAMERAYMAX 140
 #define CAMERAYGRIPPER 55
-#define CAMERAYFORWARD 80
+#define CAMERAYFORWARD 76
+#define CAMERAYRING 96
 #define CAMERASTEP 2
 
 // Pulley states
@@ -55,5 +57,4 @@
 
 // Function prototypes
 void waitAndBlink(unsigned long deltaMilliSec);
-void endstopPressed();
-void endstopNotPressed();
+void endstopChange();
