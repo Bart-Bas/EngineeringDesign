@@ -18,6 +18,9 @@ int pulleyServo = pulleyServoIdle;
 int pulleyState = PULLEYIDLE;
 unsigned long lastTimePulleyChanged;
 
+int drivingState = DRIVINGSTOP;
+unsigned long lastTimeDrivingChanged;
+
 void setup()
 {
   // Set all the PWM pins as output
@@ -73,204 +76,311 @@ void loop()
   if(mySerial.available() > 0)
   {
     char command = mySerial.read();
-    
+
+    // Main switch to execute the commands
     switch(command)
     {
       // Driving control
       // Forward
       case '8':
-        analogWrite(RIGHTMOTORA,0);
-        analogWrite(RIGHTMOTORB,255);
-        analogWrite(LEFTMOTORA,0);
-        analogWrite(LEFTMOTORB,255);
+      {
+        drivingState = DRIVINGFORWARD;
+        lastTimeDrivingChanged = millis();
+      }
       break;
       
       // Backward
       case '2':
-        analogWrite(RIGHTMOTORA,255);
-        analogWrite(RIGHTMOTORB,0);
-        analogWrite(LEFTMOTORA,255);
-        analogWrite(LEFTMOTORB,0);
+      {
+        drivingState = DRIVINGBACKWARD;
+        lastTimeDrivingChanged = millis();
+      }
       break;
 
       // Left
       case '4':
-        analogWrite(RIGHTMOTORA,0);
-        analogWrite(RIGHTMOTORB,255);
-        analogWrite(LEFTMOTORA,255);
-        analogWrite(LEFTMOTORB,0);
+      {
+        drivingState = DRIVINGLEFT;
+        lastTimeDrivingChanged = millis();
+      }
       break;
 
       // Right
       case '6':
-        analogWrite(RIGHTMOTORA,255);
-        analogWrite(RIGHTMOTORB,0);
-        analogWrite(LEFTMOTORA,0);
-        analogWrite(LEFTMOTORB,255);
+      {
+        drivingState = DRIVINGRIGHT;
+        lastTimeDrivingChanged = millis();
+      }
       break;
       
       // Stop
       case '5':
-        analogWrite(RIGHTMOTORA,0);
-        analogWrite(RIGHTMOTORB,0);
-        analogWrite(LEFTMOTORA,0);
-        analogWrite(LEFTMOTORB,0);
+      {
+        drivingState = DRIVINGSTOP;
+        lastTimeDrivingChanged = millis();
+      }
       break;
 
       // Gripper control (open / close)
       // Open
       case 'o':
+      {
         gripperServo += GRIPPERSERVOSTEP;
         if(gripperServo > GRIPPERSERVOMAX)
           gripperServo = GRIPPERSERVOMAX;
         servoGripper.write(gripperServo);
+      }
       break;
 
       // Close
       case 'p':
+      {
         gripperServo -= GRIPPERSERVOSTEP;
         if(gripperServo < GRIPPERSERVOMIN)
           gripperServo = GRIPPERSERVOMIN;
         servoGripper.write(gripperServo);
+      }
       break;
 
       // Gripper control (turn)
       // Turn parallel to front of the ROD
       case '.':
+      {
         turnServo = TURNSERVOMID;
         servoTurn.write(turnServo);
+      }
       break;
 
       // Turn perpendicular to front of the ROD (take the shortest turn)
       case ',':
+      {
         if(turnServo >= TURNSERVOMID)
           turnServo = TURNSERVOMAX;
         else
           turnServo = TURNSERVOMIN;
         servoTurn.write(turnServo);
+      }
       break;
 
       // Slightly turn clockwise
       case '>':
+      {
         turnServo += TURNSERVOSTEP;
         if(turnServo > TURNSERVOMAX)
           turnServo = TURNSERVOMAX;
         servoTurn.write(turnServo);
+      }
       break;
 
       // Slightly turn anty-clockwise
       case '<':
+      {
         turnServo -= TURNSERVOSTEP;
         if(turnServo < TURNSERVOMIN)
           turnServo = TURNSERVOMIN;
         servoTurn.write(turnServo);
+      }
       break;
 
       // Pulley control
       // Pulley down
       case '-':
+      {
         pulleyState = PULLEYDOWN;
         lastTimePulleyChanged = millis();
+      }
       break;
 
       // Pulley up
       case '=':
+      {
         // Endstop not pressed
         if(digitalRead(ENDSTOP))
         {
           pulleyState = PULLEYUP;
           lastTimePulleyChanged = millis();
         }
+      }
       break;
       
       // Tune pulley idle down
       case '(':
+      {
         pulleyServoIdle += 1;
         if(pulleyServoIdle > (PULLEYSERVOIDLE + PULLEYSERVOMAXTUNE))
           pulleyServoIdle = (PULLEYSERVOIDLE + PULLEYSERVOMAXTUNE);
+      }
       break;
 
       // Tune pulley idle down
       case ')':
+      {
           pulleyServoIdle -= 1;
         if(pulleyServoIdle < (PULLEYSERVOIDLE - PULLEYSERVOMAXTUNE))
           pulleyServoIdle = (PULLEYSERVOIDLE - PULLEYSERVOMAXTUNE);
+      }
       break;
 
       // Camera control
       // Move image up
       case 'w':
+      {
         cameraY += CAMERASTEP;
         if(cameraY > CAMERAYMAX)
           cameraY = CAMERAYMAX;
         servoCameraY.write(cameraY);
+      }
       break;
 
       // Move image down
       case 's':
+      {
         cameraY -= CAMERASTEP;
         if(cameraY < CAMERAYMIN)
           cameraY = CAMERAYMIN;
         servoCameraY.write(cameraY);
+      }
       break;
 
       // Move image left
       case 'a':
+      {
         cameraX += CAMERASTEP;
         if(cameraX > CAMERAXMAX)
           cameraX = CAMERAXMAX;
         servoCameraX.write(cameraX);
+      }
       break;
 
       // Move image right
       case 'd':
+      {
         cameraX -= CAMERASTEP;
         if(cameraX < CAMERAXMIN)
           cameraX = CAMERAXMIN;
         servoCameraX.write(cameraX);
+      }
       break;
 
       // Look forward
       case 'f':
+      {
         cameraX = CAMERAXFORWARD;
         cameraY = CAMERAYFORWARD;
         servoCameraX.write(cameraX);
         servoCameraY.write(cameraY);
+      }
       break;
 
       // Look at the gripper
       case 'g':
+      {
         cameraX = CAMERAXGRIPPER;
         cameraY = CAMERAYGRIPPER;
         servoCameraX.write(cameraX);
         servoCameraY.write(cameraY);
+      }
       break;
 
       // Look at the ring
       case 'r':
+      {
         cameraX = CAMERAXRING;
         cameraY = CAMERAYRING;
         servoCameraX.write(cameraX);
         servoCameraY.write(cameraY);
+      }
       break;
    }
   }
-     
-  if(pulleyState == PULLEYIDLE)
-    servoPulley.writeMicroseconds(pulleyServoIdle);
-  else if(pulleyState == PULLEYDOWN)
-  {
-     servoPulley.writeMicroseconds(pulleyServoIdle + PULLEYSERVOTURN);
 
-     if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
-      pulleyState = PULLEYIDLE;
+  // Switch to execute the right pulley state
+  switch(pulleyState)
+  {
+    case PULLEYIDLE:
+    {
+      servoPulley.writeMicroseconds(pulleyServoIdle);
+    }
+    break;
+
+    case PULLEYDOWN:
+    {
+      servoPulley.writeMicroseconds(pulleyServoIdle + PULLEYSERVOTURN);
+
+      if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
+        pulleyState = PULLEYIDLE;
+    }
+    break;
+    
+    case PULLEYUP:
+    {
+      servoPulley.writeMicroseconds(pulleyServoIdle - PULLEYSERVOTURN);
+  
+      if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
+        pulleyState = PULLEYIDLE;
+    }
+    break;
   }
-  else if(pulleyState == PULLEYUP)
-  {
-     servoPulley.writeMicroseconds(pulleyServoIdle - PULLEYSERVOTURN);
 
-     if((millis() - lastTimePulleyChanged) > PULLEYSERVOTURNTIME)
-      pulleyState = PULLEYIDLE;
+  // Swich to exectue the right driving state
+  switch(drivingState)
+  {
+    case DRIVINGFORWARD:
+    {
+      analogWrite(RIGHTMOTORA,0);
+      analogWrite(RIGHTMOTORB,DRIVINGMAXSPEED);
+      analogWrite(LEFTMOTORA,0);
+      analogWrite(LEFTMOTORB,DRIVINGMAXSPEED);
+
+      if((millis() - lastTimeDrivingChanged) > DRIVINGKEYTIME)
+        drivingState = DRIVINGSTOP;
+    }
+    break;
+
+    case DRIVINGBACKWARD:
+    {
+      analogWrite(RIGHTMOTORA,DRIVINGMAXSPEED);
+      analogWrite(RIGHTMOTORB,0);
+      analogWrite(LEFTMOTORA,DRIVINGMAXSPEED);
+      analogWrite(LEFTMOTORB,0);
+
+      if((millis() - lastTimeDrivingChanged) > DRIVINGKEYTIME)
+        drivingState = DRIVINGSTOP;
+    }
+    break;
+
+    case DRIVINGLEFT:
+    {
+      analogWrite(RIGHTMOTORA,0);
+      analogWrite(RIGHTMOTORB,DRIVINGMAXSPEED);
+      analogWrite(LEFTMOTORA,DRIVINGMAXSPEED);
+      analogWrite(LEFTMOTORB,0);
+
+      if((millis() - lastTimeDrivingChanged) > DRIVINGKEYTIME)
+        drivingState = DRIVINGSTOP;
+    }
+    break;
+
+    case DRIVINGRIGHT:
+    {
+      analogWrite(RIGHTMOTORA,DRIVINGMAXSPEED);
+      analogWrite(RIGHTMOTORB,0);
+      analogWrite(LEFTMOTORA,0);
+      analogWrite(LEFTMOTORB,DRIVINGMAXSPEED);
+
+      if((millis() - lastTimeDrivingChanged) > DRIVINGKEYTIME)
+        drivingState = DRIVINGSTOP;
+    }
+    break;
+
+    case DRIVINGSTOP:
+    {
+      analogWrite(RIGHTMOTORA,0);
+      analogWrite(RIGHTMOTORB,0);
+      analogWrite(LEFTMOTORA,0);
+      analogWrite(LEFTMOTORB,0);
+    }
+    break;
   }
 }
 

@@ -2,7 +2,7 @@
 #define USB 0
 #define LAN 1
 #define WLAN 2
-#define CONNECTION LAN
+#define CONNECTION WLAN
 
 #if CONNECTION == USB
   #define mySerial (Serial)
@@ -35,8 +35,8 @@
 
 #define PULLEYSERVOIDLE 1462
 #define PULLEYSERVOMAXTUNE 20
-#define PULLEYSERVOTURN 40
-#define PULLEYSERVOTURNTIME 100
+#define PULLEYSERVOTURN 50
+#define PULLEYSERVOTURNTIME 150
 
 #define CAMERAXMIN 10
 #define CAMERAXMAX 125
@@ -54,6 +54,17 @@
 #define PULLEYIDLE 0
 #define PULLEYUP 1
 #define PULLEYDOWN 2
+
+// Driving constants
+#define DRIVINGKEYTIME 150
+#define DRIVINGMAXSPEED 255
+
+// Driving states
+#define DRIVINGSTOP 0
+#define DRIVINGFORWARD 1
+#define DRIVINGBACKWARD 2
+#define DRIVINGLEFT 3
+#define DRIVINGRIGHT 4
 
 // Function prototypes
 void waitAndBlink(unsigned long deltaMilliSec);
